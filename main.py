@@ -6,6 +6,8 @@ import shutil
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from googleapiclient.http import MediaFileUpload
+
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -21,7 +23,7 @@ def main():
     service = build('drive', 'v3', credentials=creds)
     # 既にアップロードされているファイルの確認
     existing_files = get_existing_files(service)
-    if len(existing_files) >= GENERATIONS:
+    if len(existing_files) >= (GENERATIONS - 1):
         #必要以上保管されていれば、古いものを削除する
         delete_unnecessary_files(service,existing_files)
     # アップロードするファイルをzipに固める
@@ -68,10 +70,13 @@ def delete_unnecessary_files(service,existing_files):
         service.files().delete(fileId=sorted_files[i]['id']).execute()
 
 def create_zip_file():
-    pass
+    shutil.make_archive(DATA_DIR, 'zip', root_dir=DATA_DIR)
 
 def upload_file(service):
-    pass
+    today_str = datetime.datetime.now().strftime("%D").replace("/","-")
+    file_metadata = {'name': today_str + '.zip','parents':['1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3']}
+    media = MediaFileUpload('/home/minecraft/server/newworld.zip',mimetype='application/zip')
+    results = service.files().create(body=file_metadata,media_body=media,fields='id').execute()
 
 if __name__ == '__main__':
     main()
