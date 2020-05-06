@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 # バックアップを補完する世代数
 GENERATIONS = 3
 # バックアップデータのディレクトリ
-DATA_DIR = 'C:\\Users\\mimur\\Downloads\\tmp\\backup'
+DATA_DIR = '/home/minecraft/server/newworld'
 
 def main():
     # 認証情報の取得
