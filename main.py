@@ -21,6 +21,9 @@ DATA_NAME = 'newworld'
 PARENT_ID = '1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3'
 
 def main():
+    '''
+    メインの関数
+    '''
     # 認証情報の取得
     creds = get_creds()
     # サービスの作成
@@ -36,6 +39,9 @@ def main():
     upload_file(service)
 
 def get_creds():
+    '''
+    認証情報の取得
+    '''
     creds = None
     # 認証ファイルを開いてみる
     if os.path.exists('token.pickle'):
@@ -54,6 +60,9 @@ def get_creds():
     return creds
 
 def get_existing_files(service):
+    '''
+    既存のバックアップファイルの取得
+    '''
     # Call the Drive v3 API
     query = "'" + PARENT_ID + "' in parents"
     results = service.files().list(fields="nextPageToken, files(id, name, createdTime)", q=query).execute()
@@ -66,6 +75,9 @@ def get_existing_files(service):
         return items
 
 def delete_unnecessary_files(service,existing_files):
+    '''
+    もう保管する必要のないバックアップファイルを削除
+    '''
     # 各ファイルの作成時間を取得し、datetimeオブジェクトに変換
     for f in existing_files:
         f['datetime_createdTime'] = datetime.datetime.strptime(f['createdTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -75,9 +87,15 @@ def delete_unnecessary_files(service,existing_files):
         service.files().delete(fileId=sorted_files[i]['id']).execute()
 
 def create_zip_file():
+    '''
+    バックアップフォルダをzipに固める
+    '''
     shutil.make_archive(DATA_DIR + DATA_NAME, 'zip', root_dir=DATA_DIR + DATA_NAME)
 
 def upload_file(service):
+    '''
+    ファイルをアップロード
+    '''
     today_str = datetime.datetime.now().strftime("%D").replace("/","-")
     file_metadata = {'name': today_str + '.zip','parents':['1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3']}
     media = MediaFileUpload(DATA_DIR + DATA_NAME + '.zip', mimetype='application/zip')
