@@ -14,7 +14,11 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 # バックアップを補完する世代数
 GENERATIONS = 3
 # バックアップデータのディレクトリ
-DATA_DIR = '/home/minecraft/server/newworld'
+DATA_DIR = '/home/minecraft/server/'
+# バックアップしたいデータの名前
+DATA_NAME = 'newworld'
+# バックアップデータを保存する、Google DriveのフォルダID
+PARENT_ID = '1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3'
 
 def main():
     # 認証情報の取得
@@ -51,7 +55,8 @@ def get_creds():
 
 def get_existing_files(service):
     # Call the Drive v3 API
-    results = service.files().list(fields="nextPageToken, files(id, name, createdTime)", q="'1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3' in parents").execute()
+    query = "'" + PARENT_ID + "' in parents"
+    results = service.files().list(fields="nextPageToken, files(id, name, createdTime)", q=query).execute()
     items = results.get('files', [])
 
     if not items:
@@ -70,12 +75,12 @@ def delete_unnecessary_files(service,existing_files):
         service.files().delete(fileId=sorted_files[i]['id']).execute()
 
 def create_zip_file():
-    shutil.make_archive(DATA_DIR, 'zip', root_dir=DATA_DIR)
+    shutil.make_archive(DATA_DIR + DATA_NAME, 'zip', root_dir=DATA_DIR + DATA_NAME)
 
 def upload_file(service):
     today_str = datetime.datetime.now().strftime("%D").replace("/","-")
     file_metadata = {'name': today_str + '.zip','parents':['1fPMSAy2HszkLaG6IYFhqqs6y8dMvLkZ3']}
-    media = MediaFileUpload('/home/minecraft/server/newworld.zip',mimetype='application/zip')
+    media = MediaFileUpload(DATA_DIR + DATA_NAME + '.zip', mimetype='application/zip')
     results = service.files().create(body=file_metadata,media_body=media,fields='id').execute()
 
 if __name__ == '__main__':
